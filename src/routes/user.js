@@ -1,13 +1,17 @@
 const express = require('express')
 const routerUser = express.Router()
 const UserController = require('../app/controllers/UserController')
-const { authenticatedAdmin } = require('../config/db/authenticatedAdmin')
+const {authenticatedAdmin} = require('../config/db/authenticatedAdmin')
 
+
+routerUser
+    .route("/countByRole/:role")
+    .get( UserController.countByRole)
 
 
 routerUser
     .route("/changePassword/")
-    .put( UserController.changePassword)
+    .put(UserController.changePassword)
 
 routerUser
     .route("/trash")
@@ -21,6 +25,7 @@ routerUser
     .get(UserController.getOne)
     .put(UserController.put)
     .delete(authenticatedAdmin, UserController.delete)
+    
 routerUser
     .route("/")
     .get(authenticatedAdmin, UserController.get)

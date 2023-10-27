@@ -1,10 +1,11 @@
-const Order = require('../models/Order');
+
 var bcrypt = require('bcryptjs');
 const Token = require('../../config/db/config');
 var jwt = require('jsonwebtoken');
 const Product = require('../models/Product');
-const moment = require('moment');
-class OrderController {
+const CustomOrder = require('../models/customOrder');
+
+class CustomOrderController {
 
     getAdmin(req, res, next) {
         try {
@@ -19,34 +20,39 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({}, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({}, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
 
     }
     getUser(req, res, next) {
         try {
+            const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
+            const limit = parseInt(req.query.limit) || 10000000000;
+            const sort = parseInt(req.query.sort) || -1;
+
+            const options = {
+                page: page,
+                limit: limit,
+                collation: {
+                    locale: 'en',
+                },
+                sort: { createdAt: sort },
+            };
             // Tìm đơn hàng theo ID và kiểm tra quyền truy cập của người dùng
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.find({ user: checkTokenValid.user._id })
-                .then((order) => {
-
-                    res.json(order);
-                })
-                .catch((err) => {
-                    res.json(err);
-
-                })
-
+            CustomOrder.paginate({ user: checkTokenValid.user._id }, options, function (err, result) {
+                return res.json(result)
+            })
             // Trả về thông tin đơn hàng
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
 
     }
@@ -65,13 +71,37 @@ class OrderController {
                 sort: { createdAt: sort },
             };
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Pending" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ user: checkTokenValid.user._id, status: "Pending" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
+        }
+    }
+
+    getUserDeposit(req, res, next) {
+        try {
+            const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
+            const limit = parseInt(req.query.limit) || 10000000000;
+            const sort = parseInt(req.query.sort) || -1;
+            const options = {
+                page: page,
+                limit: limit,
+                collation: {
+                    locale: 'en',
+                },
+                sort: { createdAt: sort },
+            };
+            var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
+            CustomOrder.paginate({ user: checkTokenValid.user._id, status: "Deposit" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
+                })
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getUserProcessing(req, res, next) {
@@ -88,61 +118,16 @@ class OrderController {
                 sort: { createdAt: sort },
             };
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Processing" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ user: checkTokenValid.user._id, status: "Processing" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
-    getUserProcessing(req, res, next) {
-        try {
-            const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
-            const limit = parseInt(req.query.limit) || 10000000000;
-            const sort = parseInt(req.query.sort) || -1;
-            const options = {
-                page: page,
-                limit: limit,
-                collation: {
-                    locale: 'en',
-                },
-                sort: { createdAt: sort },
-            };
-            var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Processing" }, options)
-                .then((order) => {
-                    res.json(order);
-                })
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
-        }
-    }
-    getUserProcessing(req, res, next) {
-        try {
-            const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
-            const limit = parseInt(req.query.limit) || 10000000000;
-            const sort = parseInt(req.query.sort) || -1;
-            const options = {
-                page: page,
-                limit: limit,
-                collation: {
-                    locale: 'en',
-                },
-                sort: { createdAt: sort },
-            };
-            var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Processing" }, options)
-                .then((order) => {
-                    res.json(order);
-                })
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
-        }
-    }
+
     getUserShipped(req, res, next) {
         try {
             const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
@@ -157,13 +142,13 @@ class OrderController {
                 sort: { createdAt: sort },
             };
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Shipped" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ user: checkTokenValid.user._id, status: "Shipped" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getUserDelivered(req, res, next) {
@@ -180,13 +165,13 @@ class OrderController {
                 sort: { createdAt: sort },
             };
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Delivered" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ user: checkTokenValid.user._id, status: "Delivered" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getUserCanceled(req, res, next) {
@@ -203,13 +188,13 @@ class OrderController {
                 sort: { createdAt: sort },
             };
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Canceled" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ user: checkTokenValid.user._id, status: "Canceled" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getUserReturned(req, res, next) {
@@ -226,36 +211,13 @@ class OrderController {
                 sort: { createdAt: sort },
             };
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id, status: "Returned" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ user: checkTokenValid.user._id, status: "Returned" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
-        }
-    }
-    getUserAll(req, res, next) {
-        try {
-            const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
-            const limit = parseInt(req.query.limit) || 10000000000;
-            const sort = parseInt(req.query.sort) || -1;
-            const options = {
-                page: page,
-                limit: limit,
-                collation: {
-                    locale: 'en',
-                },
-                sort: { createdAt: sort },
-            };
-            var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-            Order.paginate({ user: checkTokenValid.user._id}, options)
-                .then((order) => {
-                    res.json(order);
-                })
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
 
@@ -274,13 +236,35 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Pending" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Pending" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
+        }
+    }
+    getAdminDeposit(req, res, next) {
+        try {
+            const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
+            const limit = parseInt(req.query.limit) || 10000000000;
+            const sort = parseInt(req.query.sort) || -1;
+            const options = {
+                page: page,
+                limit: limit,
+                collation: {
+                    locale: 'en',
+                },
+                sort: { createdAt: sort },
+            };
+            CustomOrder.paginate({ status: "Deposit" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
+                })
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getAdminProcessing(req, res, next) {
@@ -296,13 +280,13 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Processing" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Processing" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getAdminProcessing(req, res, next) {
@@ -318,13 +302,13 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Processing" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Processing" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getAdminProcessing(req, res, next) {
@@ -340,13 +324,13 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Processing" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Processing" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getAdminShipped(req, res, next) {
@@ -362,13 +346,13 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Shipped" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Shipped" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getAdminDelivered(req, res, next) {
@@ -384,13 +368,13 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Delivered" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Delivered" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getAdminCanceled(req, res, next) {
@@ -406,13 +390,13 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Canceled" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Canceled" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getAdminReturned(req, res, next) {
@@ -428,15 +412,16 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({ status: "Returned" }, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({ status: "Returned" }, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
+
     getAdminAll(req, res, next) {
         try {
             const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
@@ -450,13 +435,13 @@ class OrderController {
                 },
                 sort: { createdAt: sort },
             };
-            Order.paginate({}, options)
-                .then((order) => {
-                    res.json(order);
+            CustomOrder.paginate({}, options)
+                .then((CustomOrder) => {
+                    res.json(CustomOrder);
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
     }
     getOne(req, res, next) {
@@ -464,24 +449,24 @@ class OrderController {
             const id = req.params.id; // Lấy ID của đơn hàng từ URL
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
             // Tìm đơn hàng theo ID và kiểm tra quyền truy cập của người dùng
-            Order.findById(id)
-                .then((order) => {
+            CustomOrder.findById(id)
+                .then((CustomOrder) => {
 
-                    if (!order) {
-                        return res.status(404).json({ error: 'Order not found.' });
+                    if (!CustomOrder) {
+                        return res.status(404).json({ error: 'CustomOrder not found.' });
                     }
                     //  Kiểm tra xem người dùng có quyền truy cập đơn hàng không
-                    if (checkTokenValid.user._id.toString() === order.user.toString() || checkTokenValid.user.admin) {
-                        return res.json(order);
+                    if (checkTokenValid.user._id.toString() === CustomOrder.user.toString() || checkTokenValid.user.admin) {
+                        return res.json(CustomOrder);
                     }
-                    return res.status(403).json({ error: 'You do not have permission to access this order.' });
+                    return res.status(403).json({ error: 'You do not have permission to access this CustomOrder.' });
                 })
                 .catch(next => {
                     res.status(500).json(next)
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
 
     }
@@ -491,24 +476,24 @@ class OrderController {
             const id = req.params.id; // Lấy ID của đơn hàng từ URL
             var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
             // Tìm đơn hàng theo ID và kiểm tra quyền truy cập của người dùng
-            Order.findById(id)
-                .then((order) => {
+            CustomOrder.findById(id)
+                .then((CustomOrder) => {
 
-                    if (!order) {
-                        return res.status(404).json({ error: 'Order not found.' });
+                    if (!CustomOrder) {
+                        return res.status(404).json({ error: 'CustomOrder not found.' });
                     }
                     //  Kiểm tra xem người dùng có quyền truy cập đơn hàng không
-                    if (checkTokenValid.user._id.toString() === order.user.toString() || checkTokenValid.user.admin) {
-                        return res.json(order);
+                    if (checkTokenValid.user._id.toString() === CustomOrder.user.toString() || checkTokenValid.user.admin) {
+                        return res.json(CustomOrder);
                     }
-                    return res.status(403).json({ error: 'You do not have permission to access this order.' });
+                    return res.status(403).json({ error: 'You do not have permission to access this CustomOrder.' });
                 })
                 .catch(next => {
                     res.status(500).json(next)
                 })
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the order.' });
+            res.status(500).json({ error: 'Could not retrieve the CustomOrder.' });
         }
 
     }
@@ -541,36 +526,12 @@ class OrderController {
         var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
         const { products, totalAmount, shippingAddress, status, description, email, name, phone } = req.body;
 
-        for (var i = 0; i < products.length; i++) {
-            const productId = products[i]._id;
-            const quantityToReduce = products[i].quantity;
-            // Kiểm tra xem sản phẩm có đủ số lượng trong kho không
-            Product.findById(productId)
-                .then((dbProduct) => {
-                    const a = dbProduct.quantity - quantityToReduce;
-                    const b = dbProduct.sold + quantityToReduce;
-                    Product.findByIdAndUpdate(dbProduct._id, { quantity: a, sold: b })
-                        .then((Product) => {
 
-                        })
-                })
-                .catch((error) => {
-                    return res.status(500).json(error);
-                })
-        }
-
-        const newOrder = new Order({
+        const newCustomOrder = new CustomOrder({
+            ...req.body,
             user: checkTokenValid.user._id,
-            products,
-            totalAmount: totalAmount,
-            shippingAddress: shippingAddress,
-            description,
-            status,
-            email,
-            name,
-            phone
         });
-        newOrder.save()
+        newCustomOrder.save()
             .then((rating) => {
                 return res.json(rating)
             })
@@ -578,60 +539,35 @@ class OrderController {
                 return res.status(500).json(error);
             })
     }
-    // putAdminStatus(req, res, next) {
-    //     try {
-    //         const { status } = req.params; // Lấy status
-    //         const { orders } = req.body;
-    //         console.log(22222222, orders);
-    //         for (const orderId of orders) {
-    //             console.log(11111111, orders);
-    //             Order.findByIdAndUpdate({ _id: orderId }, { status: status })
-    //                 .catch(err => res.json({ error: err }))
-    //         }
-    //     } catch (error) {
-    //         console.error(error);
-    //         res.status(500).json({ error: 'Could not update the order.' });
-    //     }
-    // }
-    async putAdminStatus(req, res, next) {
+    putAdminStatus(req, res, next) {
         try {
             const { status } = req.params; // Lấy status
             const { orders } = req.body;
+            console.log(11111111111, orders);
             for (const orderId of orders) {
-                try {
-                    // Sử dụng await để chờ cho đến khi cập nhật được hoàn thành
-                    await Order.findByIdAndUpdate({ _id: orderId }, { status: status });
-                } catch (err) {
-                    // Xử lý lỗi khi cập nhật không thành công
-                    console.error(`Error updating order ${orderId}: ${err.message}`);
-                    // Bạn có thể quyết định liệu bạn muốn tiếp tục với các lệnh tiếp theo hoặc dừng luồng ở đây.
-                    // Nếu bạn muốn dừng, bạn có thể sử dụng return hoặc throw err.
-                }
+                CustomOrder.findByIdAndUpdate({ _id: orderId }, { status: status })
+                    .catch(err => res.json({ error: err }))
             }
-    
-            // Trả về kết quả thành công nếu mọi thứ đều ok
-            res.json({ message: 'Orders updated successfully.' });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not update the orders.' });
+            res.status(500).json({ error: 'Could not update the CustomOrder.' });
         }
     }
-    
     put(req, res, next) {
         try {
             const { id } = req.params; // Lấy ID của đơn hàng từ URL
             const { status, shippingAddress } = req.body;
 
             // Kiểm tra xem đơn hàng tồn tại
-            Order.findById(id)
+            CustomOrder.findById(id)
                 .then((existingOrder) => {
                     if (!existingOrder) {
-                        return res.status(404).json({ error: 'Order not found.' });
+                        return res.status(404).json({ error: 'CustomOrder not found.' });
                     }
 
                     // Kiểm tra xem người dùng có quyền cập nhật đơn hàng không
                     if (existingOrder.user.toString() !== req.user._id.toString()) {
-                        return res.status(403).json({ error: 'You do not have permission to update this order.' });
+                        return res.status(403).json({ error: 'You do not have permission to update this CustomOrder.' });
                     }
 
                     // Cập nhật thông tin đơn hàng
@@ -648,13 +584,13 @@ class OrderController {
 
         } catch (error) {
             console.error(error);
-            res.status(500).json({ error: 'Could not update the order.' });
+            res.status(500).json({ error: 'Could not update the CustomOrder.' });
         }
 
     }
 
     delete(req, res, next) {
-        Order.delete({ _id: req.params.id })
+        CustomOrder.delete({ _id: req.params.id })
             .then((Product => {
                 res.send(Product)
             }
@@ -665,42 +601,5 @@ class OrderController {
         res.status(500).json(error);
 
     }
-
-    getAdminDeliveredByMonth(req, res, next) {
-        try {
-            const year = parseInt(req.query.year) || moment().year(); // Năm hiện tại, mặc định là năm hiện tại
-            // Chuyển đổi ngày bắt đầu và ngày kết thúc thành đối tượng Date
-            const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
-            const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
-    
-            // Truy vấn tổng tiền của đơn hàng theo từng tháng trong năm
-            Order.aggregate([
-                {
-                    $match: {
-                        status: "Processing", // hoặc bất kỳ trạng thái đơn hàng nào bạn muốn
-                        createdAt: {
-                            $gte: startDate, // Ngày bắt đầu của năm
-                            $lte: endDate // Ngày kết thúc của năm
-                        }
-                    }
-                },
-                {
-                    $group: {
-                        _id: { month: { $month: "$createdAt" } }, // Nhóm theo tháng
-                        totalAmount: { $sum: "$totalAmount" }, // Tính tổng tiền của các đơn hàng trong nhóm
-                        totalQuantity: { $sum: { $sum: "$products.quantity" } } 
-                    }
-                },
-                {
-                    $sort: { "_id.month": 1 } // Sắp xếp theo tháng
-                }
-            ]).then((result) => {
-                res.json(result);
-            });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ error: 'Could not retrieve the total amounts.' });
-        }
-    }
 }
-module.exports = new OrderController;
+module.exports = new CustomOrderController;

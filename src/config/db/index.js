@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 async function Connect() {
     try {
-        await mongoose.connect('mongodb://localhost:27017/chim');
+        await mongoose.connect('mongodb://localhost:27017/chimDo');
         console.log("ok!");
     } catch (error) {
         console.log("error!");

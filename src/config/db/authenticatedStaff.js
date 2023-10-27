@@ -3,7 +3,7 @@ var jwt = require("jsonwebtoken");
 var Token = require("./config");
 
 module.exports = {
-  authenticatedAdmin: function (req, res, next) {
+  authenticatedStaff: function (req, res, next) {
     if (req.cookies.accessToken) {
       try {
         var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
