@@ -13,7 +13,7 @@ const User = new Schema({
     address: { type: String, maxLength: 255, default: '' },
     name: { type: String, maxLength: 255, default: '' },
     avatar: { type: String, maxLength: 255, default: '' },
-    role: { type: String, enum: ['user','admin'], default: 'user' },
+    role: { type: String, enum: ['user', 'manager','staff','admin'], default: 'user' },
     deletedAt: { type: String, maxLength: 255, default: null },
 },
     {

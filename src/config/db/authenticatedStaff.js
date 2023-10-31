@@ -7,7 +7,7 @@ module.exports = {
     if (req.cookies.accessToken) {
       try {
         var checkTokenValid = jwt.verify(req.cookies.accessToken, Token.refreshToken);
-        if (checkTokenValid.user.role==='admin') {
+        if (checkTokenValid.user.role==='staff') {
           return next();
         }
         else {
