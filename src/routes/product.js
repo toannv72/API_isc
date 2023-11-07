@@ -18,7 +18,7 @@ routerProduct.put('/restore/:id', authenticatedStaff, ProductControllers.restore
 routerProduct.get('/trash', authenticatedStaff, ProductControllers.trash)
 routerProduct.get('/search?', ProductControllers.search)
 
-routerProduct.get('/staff', authenticatedStaff,ProductControllers.showProductStaff)
+routerProduct.get('/staff', ProductControllers.showProductStaff)
 // sắp xếp sản phẩm theo thứ tự bán chạy
 routerProduct.get('/sold', ProductControllers.showSold)
 

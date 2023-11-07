@@ -131,7 +131,14 @@ class ProductControllers {
     show(req, res, next) {
         const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
         const limit = parseInt(req.query.limit) || 10000000000;
-        const sort = parseInt(req.query.sort) || -1; // Trang hiện tại, mặc định là trang 1
+        const sort = parseInt(req.query.sort) || -1; 
+        const sortPrice = parseInt(req.query.sortPrice)
+        const minPrice = parseInt(req.query.minPrice) || 0;
+        const maxPrice = parseInt(req.query.maxPrice) || 10000000000;
+        var sorts={ createdAt: sort}
+        if (sortPrice) {
+            sorts={ reducedPrice: sortPrice}
+        }
         const options = {
             page: page,
             limit: limit,
@@ -139,9 +146,9 @@ class ProductControllers {
             collation: {
                 locale: 'en',
             },
-            sort: { createdAt: sort },
+            sort: sorts,
         };
-        const query = { quantity: { $gt: 0 } };
+        const query = { quantity: { $gt: 0 },price: { $gte: minPrice, $lte: maxPrice } };
         Product.paginate(query, options, function (err, result) {
             return res.json(result)
         })
@@ -169,6 +176,13 @@ class ProductControllers {
         const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
         const limit = parseInt(req.query.limit) || 10000000000;
         const sort = parseInt(req.query.sort) || -1; // Trang hiện tại, mặc định là trang 1
+        const sortPrice = parseInt(req.query.sortPrice)
+        const minPrice = parseInt(req.query.minPrice) || 0;
+        const maxPrice = parseInt(req.query.maxPrice) || 10000000000; 
+        var sorts={ sold: sort }
+        if (sortPrice) {
+            sorts={ reducedPrice: sortPrice}
+        }
         const options = {
             page: page,
             limit: limit,
@@ -176,9 +190,30 @@ class ProductControllers {
             collation: {
                 locale: 'en',
             },
-            sort: { sold: sort },
+            sort: sorts,
         };
-        const query = { quantity: { $gt: 0 } };
+        const query = { quantity: { $gt: 0 } ,price: { $gte: minPrice, $lte: maxPrice }};
+        Product.paginate(query, options, function (err, result) {
+            return res.json(result)
+        })
+    }
+    showPrice(req, res, next) {
+        const page = parseInt(req.query.page) || 1; // Trang hiện tại, mặc định là trang 1
+        const limit = parseInt(req.query.limit) || 10000000000;
+        const sort = parseInt(req.query.sort) || -1;
+        const minPrice = parseInt(req.query.minPrice) || 0;
+        const maxPrice = parseInt(req.query.maxPrice) || 10000000000;
+
+        const options = {
+            page: page,
+            limit: limit,
+            // tùy chọn xác định cách sắp xếp và so sánh trong truy vấn.
+            collation: {
+                locale: 'en',
+            },
+            sort: { reducedPrice: sort },
+        };
+        const query = { quantity: { $gt: 0 }, price: { $gte: minPrice, $lte: maxPrice } };
         Product.paginate(query, options, function (err, result) {
             return res.json(result)
         })
